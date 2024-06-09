@@ -6,8 +6,7 @@ import 'package:flutter/cupertino.dart';
 import '../models/task.dart';
 import '../services/database_service.dart';
 
-class TaskViewModel{
-
+class TaskViewModel extends ChangeNotifier{
 
   Stream<QuerySnapshot<Object?>> getAllTasksStream() {
     return DatabaseService().taskCollection.snapshots();
@@ -37,7 +36,6 @@ class TaskViewModel{
 
   Future<void> addTask(Task task) async{
     await DatabaseService().addTask(task);
-
   }
 
   Future<void> editTask(String id, Task task) async{

@@ -1,12 +1,19 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:manage_app/screens/add_task.dart';
 import 'package:manage_app/screens/login_screen.dart';
 import 'package:manage_app/screens/task_details.dart';
 import 'package:manage_app/services/authentication.dart';
+import 'package:manage_app/widgets/snack_bar.dart';
 import 'package:provider/provider.dart';
-
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import '../main.dart';
 import '../models/task.dart';
+import '../notification/notification.dart';
 import '../view_models/task_view_model.dart';
 
 class HomeScreent extends StatefulWidget {
@@ -18,21 +25,30 @@ class HomeScreent extends StatefulWidget {
 
 class _HomeScreentState extends State<HomeScreent> {
   bool loading = true;
-  // final TaskViewModel taskViewModel = TaskViewModel();
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   getData();
-  // }
-  //
-  //
-  // Future<void> getData() async{
-  //   await taskViewModel.getAllTasks();
-  //   setState(() {
-  //     loading = false;
-  //   });
-  // }
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
+  @override
+  void initState() {
+    super.initState();
+    tz.initializeTimeZones();
+  }
+
+  void _scheduleNotifications(List<Task> tasks) {
+      final now = tz.TZDateTime.now(tz.getLocation('Asia/Ho_Chi_Minh'));
+      for (Task task in tasks) {
+        final scheduledTime = tz.TZDateTime.from(task.time, tz.getLocation('Asia/Ho_Chi_Minh'));
+        if (scheduledTime.isBefore(now)) {
+          print('Scheduled time must be in the future');
+        } else {
+          Noti().scheduleNotification(
+            title: 'Notification',
+            body: 'You have a task need to do',
+            scheduledNotificationDateTime: task.time,
+          );
+        }
+
+    }
+  }
   void logOut() {
     showDialog(
         context: context,
@@ -82,6 +98,7 @@ class _HomeScreentState extends State<HomeScreent> {
           icon: const Icon(Icons.add),),
         title: const Text('Task List'),
         actions: [
+
           IconButton(onPressed: logOut, icon: const Icon(Icons.logout_outlined))
         ],
       ),
@@ -110,6 +127,7 @@ class _HomeScreentState extends State<HomeScreent> {
                           );
                         }).toList();
                         tasks.sort((a,b)=>a.time.compareTo(b.time));
+                        _scheduleNotifications(tasks);
                         return ListView.builder(
                             itemCount: tasks.length,
                             itemBuilder: (context, index){

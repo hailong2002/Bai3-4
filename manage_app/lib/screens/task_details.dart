@@ -67,23 +67,24 @@ class _TaskDetailsState extends State<TaskDetails> {
       ),
       body: Container(
         child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: StreamBuilder(
-            stream: TaskViewModel().getTasksStream(widget.id),
-            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-              if(snapshot.hasError){
-                return Text('${snapshot.error}');
-              }
-              if(snapshot.connectionState == ConnectionState.waiting){
-                return const Center(child: CircularProgressIndicator());
-              }
-              if(!snapshot.hasData){
-                return const Text('This task is empty');
-              }
-              else{
-                DocumentSnapshot doc = snapshot.data!.docs[0];
-                Task task = Task(id: doc['tid'], name: doc['name'], description: doc['description'], time: doc['time'].toDate());
-                return Column(
+            padding: const EdgeInsets.all(10.0),
+            child: StreamBuilder(
+              stream: TaskViewModel().getTasksStream(widget.id),
+              builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                try{
+                  if(snapshot.hasError){
+                    return Text('${snapshot.error}');
+                  }
+                  if(snapshot.connectionState == ConnectionState.waiting){
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if(!snapshot.hasData){
+                    return const Text('This task is empty');
+                  }
+                  else{
+                    DocumentSnapshot doc = snapshot.data!.docs[0];
+                    Task task = Task(id: doc['tid'], name: doc['name'], description: doc['description'], time: doc['time'].toDate());
+                    return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Align(
@@ -96,10 +97,15 @@ class _TaskDetailsState extends State<TaskDetails> {
                         Text(task.description,  style: const TextStyle(fontSize: 18)),
                       ],
                     );
-              }
-            },
+                  }
+                }catch(e){
+                  print(e);
+                  return Text('$e');
+                }
 
-          )
+              },
+
+            )
 
         ),
       ),

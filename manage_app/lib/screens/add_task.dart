@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:manage_app/screens/task_details.dart';
 import 'package:manage_app/services/database_service.dart';
 import 'package:manage_app/widgets/snack_bar.dart';
+import 'package:provider/provider.dart';
 
 import '../models/task.dart';
 import '../view_models/task_view_model.dart';
@@ -26,7 +27,6 @@ class _AddTaskScreentState extends State<AddTaskScreent> {
   void initState() {
     super.initState();
     getTask(widget.id);
-
   }
 
   Future<void> getTask(id) async{
@@ -149,10 +149,10 @@ class _AddTaskScreentState extends State<AddTaskScreent> {
                               TaskViewModel().addTask(task);
                               showSnackBar(context, 'Add new task success');
                             }else{
+                              Navigator.pop(context, task);
                               TaskViewModel().editTask(widget.id, task);
                               showSnackBar(context, 'Edit task success');
                             }
-
                           }
                         },
                         child: widget.id.isEmpty ? const Text('Add', style: TextStyle(fontSize: 20)) : const Text('Edit', style: TextStyle(fontSize: 20))
